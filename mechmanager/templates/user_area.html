@@ -14,11 +14,20 @@
 </ul>
 
 <h3 class="h6">Minhas últimas OS</h3>
-<ul class="list-group">
+<table class="table table-striped">
+  <thead><tr><th>Ordem de Serviço</th><th>Placa</th><th>Status</th><th>Total</th></tr></thead>
+  <tbody>
   {% for o in orders %}
-    <li class="list-group-item">OS #{{ o.title }} — {{ o.vehicle.plate }} — {{ o.get_status_display }} — Total R$ {{ o.total }}</li>
+    <tr>
+      <td>{{ o.title }}</td>
+      <td>{{ o.vehicle.plate }}</td>
+      <td>{{ o.get_status_display }}</td>
+      <td>R$ {{ o.total }}</td>
+    </tr>
   {% empty %}
-    <li class="list-group-item text-muted">Nenhuma OS ainda.</li>
+    <tr><td colspan="4" class="text-muted">Nenhuma OS ainda.</td></tr>
   {% endfor %}
-</ul>
+  </tbody>
+</table>
+
 {% endblock %}
