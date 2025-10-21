@@ -1,11 +1,11 @@
-# 🧩 Diagrama do Banco de Dados — MechManager
+#  Diagrama do Banco de Dados — MechManager
 
 O **MechManager** utiliza um modelo relacional simples e eficiente, projetado para representar o fluxo de uma oficina mecânica:  
 clientes → veículos → ordens de serviço → itens de serviço.
 
 ---
 
-## 📘 Estrutura Conceitual
+##  Estrutura Conceitual
 
 Cada entidade desempenha um papel específico no sistema:
 
@@ -20,7 +20,7 @@ Cada entidade desempenha um papel específico no sistema:
 
 ---
 
-## 🧱 Diagrama ER (Mermaid)
+## Diagrama ER (Mermaid)
 
 ```mermaid
 erDiagram
