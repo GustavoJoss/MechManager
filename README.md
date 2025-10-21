@@ -1,6 +1,6 @@
-# 🔧 MechManager — Sistema de Oficina Mecânica
+#  MechManager — Sistema de Oficina Mecânica
 
-## 📘 Visão Geral
+##  Visão Geral
 O **MechManager** é um sistema web desenvolvido com **Django 5** para gerenciamento de **oficinas mecânicas**.  
 Ele permite cadastrar veículos, mecânicos e serviços, além de criar **ordens de serviço (OS)** detalhadas com cálculo automático do valor total.
 
@@ -13,7 +13,7 @@ Esse projeto foi desenvolvido para a disciplina **Programação Web (GAC116)** d
 
 ---
 
-## 👥 Integrantes do Grupo
+##  Integrantes do Grupo
 | Nome | Matrícula | Função |
 |------|------------|--------|
 | Gustavo José | 20XX.XXXXX | Modelagem, backend e documentação |
@@ -22,12 +22,12 @@ Esse projeto foi desenvolvido para a disciplina **Programação Web (GAC116)** d
 
 ---
 
-## 🎯 Objetivo
+##  Objetivo
 Facilitar o gerenciamento de uma oficina mecânica, permitindo o **controle de ordens de serviço**, **cadastro de veículos e mecânicos**, e **consulta de serviços realizados** de forma simples e segura.
 
 ---
 
-## ⚙️ Funcionalidades
+##  Funcionalidades
 - Cadastro de **veículos**, **serviços** e **mecânicos**  
 - Criação de **ordens de serviço (OS)** vinculadas a um veículo  
 - Cálculo automático do valor total da OS (soma dos itens)  
@@ -38,7 +38,7 @@ Facilitar o gerenciamento de uma oficina mecânica, permitindo o **controle de o
 
 ---
 
-# 💻 Tecnologias Utilizadas
+#  Tecnologias Utilizadas
 
 Linguagem: Python 3.12
 
@@ -52,9 +52,9 @@ Versionamento: Git e GitHub
 
 ---
 
-# 🚀 Como Executar o Projeto
+#  Como Executar o Projeto
 
-1️⃣ Criar ambiente virtual
+1️. Criar ambiente virtual
    - python -m venv .venv
 
 # Windows
@@ -63,19 +63,19 @@ Versionamento: Git e GitHub
    - source .venv/bin/activate
 
 
-2️⃣ Instalar dependências
+2️. Instalar dependências
    - pip install django==5.*
 
 
-3️⃣ Migrar o banco de dados
+3️. Migrar o banco de dados
    - python manage.py makemigrations
    - python manage.py migrate
 
 
-4️⃣ Criar superusuário
+4️. Criar superusuário
    - python manage.py createsuperuser
 
-5️⃣ Executar servidor
+5️. Executar servidor
    - python manage.py runserver
 
 ---
@@ -96,7 +96,7 @@ http://127.0.0.1:8000/area
 
 ---
 
- # 🧠 Exemplo de Fluxo
+ #  Exemplo de Fluxo
 
  - Admin cadastra serviços e mecânicos.
 
@@ -110,7 +110,7 @@ http://127.0.0.1:8000/area
 
 ---
 
-# 🏁 Conclusão
+#  Conclusão
 
  - O MechManager entrega uma solução completa e funcional para oficinas mecânicas de pequeno e médio porte.
  Cumpre todos os requisitos do trabalho e serve como base sólida para expandir o sistema em futuras etapas.
@@ -119,4 +119,4 @@ http://127.0.0.1:8000/area
 
  # Desenvolvido por:
  - Gustavo Jose Rodrigues Pereira — UFLA, 2025/2
- - 🧑‍💻 Projeto acadêmico para a disciplina de Programação Web.
+ - Projeto acadêmico para a disciplina de Programação Web.
