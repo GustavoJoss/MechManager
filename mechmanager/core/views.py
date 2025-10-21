@@ -4,6 +4,11 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm
 from .models import Vehicle, WorkOrder
 
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+
 def home(request):
     return render(request, "home.html")
 
@@ -24,4 +29,15 @@ def signup(request):
 def user_area(request):
     vehicles = Vehicle.objects.filter(owner=request.user).order_by("-created_at")[:5]
     orders = WorkOrder.objects.filter(vehicle__owner=request.user).order_by("-created_at")[:5]
-    return render(request, "user_area.html", {"vehicles": vehicles, "orders": orders})
+    context = {
+        "vehicles": vehicles,
+        "orders": orders,
+        "username": request.user.username, 
+    }
+    return render(request, "user_area.html", context)
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Você saiu da sua conta.")
+    return redirect("home")

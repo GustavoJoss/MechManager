@@ -22,10 +22,12 @@ class ServiceAdmin(admin.ModelAdmin):
 class WorkItemInline(admin.TabularInline):
     model = WorkItem
     extra = 1
+    fk_name = "workorder"  # opcional; ajuda a evitar ambiguidade
 
 @admin.register(WorkOrder)
 class WorkOrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "vehicle", "assigned_mechanic", "status", "opened_at", "closed_at", "total")
+    list_display = ("id", "title", "vehicle", "assigned_mechanic", "status", "opened_at", "closed_at", "total")
+    readonly_fields = ("title",)
     list_filter = ("status", "assigned_mechanic", "opened_at")
-    search_fields = ("vehicle__plate", "vehicle__owner__username", "notes")
+    search_fields = ("title", "vehicle__plate", "vehicle__owner__username", "notes")
     inlines = [WorkItemInline]

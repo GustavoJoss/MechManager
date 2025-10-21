@@ -1,16 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="h4 mb-3">Minha Área</h1>
-<h2 class="h6">Meus veículos recentes</h2>
+<h1 class="h4 mb-3">Bem-vindo, {{ username }}!</h1>
+
+<h2 class="h5 mt-4">Minha Área</h2>
+
+<h3 class="h6 mt-3">Meus veículos recentes</h3>
 <ul class="list-group mb-4">
   {% for v in vehicles %}
     <li class="list-group-item">{{ v.plate }} — {{ v.make }} {{ v.model }} ({{ v.year }})</li>
-  {% empty %}<li class="list-group-item">Nenhum veículo cadastrado.</li>{% endfor %}
+  {% empty %}
+    <li class="list-group-item text-muted">Nenhum veículo cadastrado.</li>
+  {% endfor %}
 </ul>
-<h2 class="h6">Minhas últimas OS</h2>
+
+<h3 class="h6">Minhas últimas OS</h3>
 <ul class="list-group">
   {% for o in orders %}
-    <li class="list-group-item">OS #{{ o.id }} — {{ o.vehicle.plate }} — {{ o.get_status_display }} — Total R$ {{ o.total }}</li>
-  {% empty %}<li class="list-group-item">Nenhuma OS ainda.</li>{% endfor %}
+    <li class="list-group-item">OS #{{ o.title }} — {{ o.vehicle.plate }} — {{ o.get_status_display }} — Total R$ {{ o.total }}</li>
+  {% empty %}
+    <li class="list-group-item text-muted">Nenhuma OS ainda.</li>
+  {% endfor %}
 </ul>
 {% endblock %}
