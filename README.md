@@ -16,9 +16,7 @@ Esse projeto foi desenvolvido para a disciplina **Programação Web (GAC116)** d
 ##  Integrantes do Grupo
 | Nome | Matrícula | Função |
 |------|------------|--------|
-| Gustavo José | 20XX.XXXXX | Modelagem, backend e documentação |
-| [Integrante 2] | [Matrícula] | Front-end (Bootstrap e templates) |
-| [Integrante 3] | [Matrícula] | Testes e banco de dados |
+| Gustavo José | 202310431 | Modelagem, backend e documentação |
 
 ---
 
