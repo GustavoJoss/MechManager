@@ -52,6 +52,8 @@ class WorkOrder(TimeStamped):
     closed_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
+    customer_confirmed = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title or f"OS #{self.pk} - {self.vehicle.plate} [{self.get_status_display()}]"
 

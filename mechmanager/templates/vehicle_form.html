@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4 mb-3">Cadastrar veículo</h1>
+<form method="post" class="card card-body">{% csrf_token %}
+  {{ form.as_p }}
+  <div class="mt-2">
+    <button class="btn btn-success">Salvar</button>
+    <a class="btn btn-light" href="{% url 'user_area' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h4 mb-3">Nova Ordem de Serviço</h1>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  <h2 class="h6">Dados da OS</h2>
+  {{ form.as_p }}
+
+  <hr>
+  <h2 class="h6">Itens</h2>
+  {{ formset.management_form }}
+  {% for f in formset %}
+    <div class="border rounded p-3 mb-2">
+      {{ f.as_p }}
+      {% if f.instance.pk %}
+        <label class="form-check mt-2">{{ f.DELETE }} Remover este item</label>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <div class="mt-2">
+    <button class="btn btn-success">Salvar OS</button>
+    <a class="btn btn-light" href="{% url 'user_area' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
