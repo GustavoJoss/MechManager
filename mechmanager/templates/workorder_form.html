@@ -1,26 +1,88 @@
 {% extends "base.html" %}
 {% block content %}
 <h1 class="h4 mb-3">Nova Ordem de Serviço</h1>
-<form method="post" class="card card-body">
-  {% csrf_token %}
-  <h2 class="h6">Dados da OS</h2>
-  {{ form.as_p }}
 
-  <hr>
-  <h2 class="h6">Itens</h2>
-  {{ formset.management_form }}
-  {% for f in formset %}
-    <div class="border rounded p-3 mb-2">
-      {{ f.as_p }}
-      {% if f.instance.pk %}
-        <label class="form-check mt-2">{{ f.DELETE }} Remover este item</label>
-      {% endif %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title mb-4">Nova Ordem de Serviço</h3>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <!-- DADOS DA OS -->
+        <h5 class="mb-3">Dados da OS</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.vehicle.id_for_label }}">{{ form.fields.vehicle.label }}</label>
+            {{ form.vehicle }}
+            <div class="text-danger small">{{ form.vehicle.errors }}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.assigned_mechanic.id_for_label }}">{{ form.fields.assigned_mechanic.label }}</label>
+            {{ form.assigned_mechanic }}
+            <div class="text-danger small">{{ form.assigned_mechanic.errors }}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.fields.status.label }}</label>
+            {{ form.status }}
+            <div class="text-danger small">{{ form.status.errors }}</div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.fields.notes.label }}</label>
+            {{ form.notes }}
+            <div class="text-danger small">{{ form.notes.errors }}</div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- ITENS -->
+        <h5 class="mb-3">Itens</h5>
+
+        {{ formset.management_form }}
+
+        {% for f in formset.forms %}
+          {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="row align-items-end mb-3 border rounded p-3 bg-light">
+            <div class="col-md-5">
+              <label class="form-label" for="{{ f.service.id_for_label }}">{{ f.fields.service.label }}</label>
+              {{ f.service }}
+              <div class="text-danger small">{{ f.service.errors }}</div>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label" for="{{ f.quantity.id_for_label }}">{{ f.fields.quantity.label }}</label>
+              {{ f.quantity }}
+              <div class="text-danger small">{{ f.quantity.errors }}</div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label" for="{{ f.unit_price.id_for_label }}">{{ f.fields.unit_price.label }}</label>
+              {{ f.unit_price }}
+              <div class="text-danger small">{{ f.unit_price.errors }}</div>
+            </div>
+
+            <div class="col-md-2 text-center">
+              <label class="form-label d-block" for="{{ f.DELETE.id_for_label }}">Excluir</label>
+              {{ f.DELETE }}
+            </div>
+          </div>
+        {% endfor %}
+
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <a href="{% url 'user_area' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
     </div>
-  {% endfor %}
-
-  <div class="mt-2">
-    <button class="btn btn-success">Salvar OS</button>
-    <a class="btn btn-light" href="{% url 'user_area' %}">Cancelar</a>
   </div>
-</form>
+</div>
 {% endblock %}

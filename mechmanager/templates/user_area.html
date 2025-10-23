@@ -15,19 +15,187 @@
 
 <h3 class="h6">Minhas últimas OS</h3>
 <table class="table table-striped">
-  <thead><tr><th>Ordem de Serviço</th><th>Placa</th><th>Status</th><th>Total</th></tr></thead>
-  <tbody>
-  {% for o in orders %}
+  <thead>
     <tr>
-      <td>{{ o.title }}</td>
-      <td>{{ o.vehicle.plate }}</td>
-      <td>{{ o.get_status_display }}</td>
-      <td>R$ {{ o.total }}</td>
+      <th>#</th>
+      <th>Cliente</th>
+      <th>Placa</th>
+      <th>Serviço</th>
+      <th>Total</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody id="tbody-os">
+  {% for os in orders %}
+    <tr id="os-{{ os.id }}">
+      <td>{{ os.id }}</td>
+
+      <!-- Cliente -->
+      <td>
+        {% if os.vehicle.owner.get_full_name %}
+          {{ os.vehicle.owner.get_full_name }}
+        {% else %}
+          {{ os.vehicle.owner.username }}
+        {% endif %}
+      </td>
+
+      <!-- Placa -->
+      <td>{{ os.vehicle.plate }}</td>
+
+      <!-- Serviço (título gerado automaticamente com base nos itens da OS) -->
+      <td>{{ os.title|default:"—" }}</td>
+
+      <!-- Total (somatório dos itens) -->
+      <td>R$ {{ os.total|floatformat:2 }}</td>
+
+      <td>
+        {% if os.customer_confirmed %}
+          <button class="btn btn-secondary" disabled>Confirmado</button>
+        {% else %}
+          <button class="btn btn-success btn-confirmar" data-id="{{ os.id }}">
+            Confirmar
+          </button>
+        {% endif %}
+      </td>
+      <td>
+        <button class="btn btn-light btn-detalhes" data-id="{{ os.id }}">Detalhes</button>
+      </td>
     </tr>
   {% empty %}
-    <tr><td colspan="4" class="text-muted">Nenhuma OS ainda.</td></tr>
+    <tr><td colspan="6" class="text-muted">Nenhuma OS pendente.</td></tr>
   {% endfor %}
   </tbody>
 </table>
+<div class="modal fade" id="osDetailModal" tabindex="-1" aria-labelledby="osDetailLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-6" id="osDetailLabel">Detalhes da OS #<span id="os-id"></span></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <strong>Cliente:</strong> <span id="os-customer"></span>
+        </div>
+        <div class="mb-2">
+          <strong>Veículo:</strong> <span id="os-vehicle"></span>
+        </div>
+        <div class="mb-3">
+          <strong>Descrição:</strong>
+          <p id="os-description" class="mb-0 text-pre-wrap"></p>
+        </div>
+        <div class="mb-2">
+          <strong>Itens:</strong>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Serviço</th>
+                  <th class="text-end">Qtd</th>
+                  <th class="text-end">Unitário</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody id="os-items"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="text-end">
+          <strong>Total:</strong> <span id="os-total"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* quebra de linha para descrições longas */
+.text-pre-wrap { white-space: pre-wrap; }
+</style>
+
+<script>
+
+(() => {
+  // Utilitário simples para BRL
+  const brl = (n) => isFinite(n) ? n.toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : '—';
+
+  // Abrir modal com detalhes
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-detalhes');
+    if (!btn) return;
+
+    const id = btn.getAttribute('data-id');
+    try {
+      const resp = await fetch(`/orders/${id}/`, { method: 'GET' });
+      if (!resp.ok) throw new Error('Falha ao carregar detalhes.');
+      const data = await resp.json();
+
+      // Preenche campos do modal
+      document.getElementById('os-id').textContent = data.id ?? '';
+      document.getElementById('os-customer').textContent = data.customer ?? '';
+      document.getElementById('os-vehicle').textContent = data.vehicle
+        ? `${data.vehicle.plate} — ${data.vehicle.make || ''} ${data.vehicle.model || ''} (${data.vehicle.year || ''})`
+        : '';
+      document.getElementById('os-description').textContent = data.description || '—';
+
+      // Itens
+      const tbody = document.getElementById('os-items');
+      tbody.innerHTML = '';
+      (data.items || []).forEach(it => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${it.service || ''}</td>
+          <td class="text-end">${(it.quantity ?? 0)}</td>
+          <td class="text-end">${brl(it.unit_price ?? 0)}</td>
+          <td class="text-end">${brl(it.total ?? 0)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('os-total').textContent = brl(data.total ?? 0);
+
+      // Abre o modal (Bootstrap 5)
+      const modalEl = document.getElementById('osDetailModal');
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+
+    } catch (err) {
+      console.error(err);
+      alert('Não foi possível carregar os detalhes da OS.');
+    }
+  });
+})();
+(() => {
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  const csrfTokenValue = getCookie('csrftoken');
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-confirmar');
+    if (!btn) return;
+
+    const id = btn.getAttribute('data-id');
+    if (!window.confirm('Tem certeza que deseja confirmar esta Ordem de Serviço?')) return;
+
+    const resp = await fetch(`/os/${id}/confirmar/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfTokenValue },
+    });
+
+    if (resp.ok) {
+      const row = document.getElementById(`os-${id}`);
+      if (row) row.remove();
+    } else {
+      alert('Não foi possível confirmar. Tente novamente.');
+    }
+  });
+})();
+</script>
 
 {% endblock %}

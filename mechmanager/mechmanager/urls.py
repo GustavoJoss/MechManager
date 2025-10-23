@@ -13,4 +13,6 @@ urlpatterns = [
     path("vehicles/new/", views.vehicle_create, name="vehicle_create"),
     path("orders/new/", views.workorder_create, name="workorder_create"),
     path("orders/<int:pk>/confirm/", views.confirm_workorder, name="confirm_workorder"),
+    path("os/<int:pk>/confirmar/", views.confirmar_os_json, name="confirmar_os_json"),
+    path("orders/<int:pk>/", views.workorder_detail, name="workorder_detail"),
 ]

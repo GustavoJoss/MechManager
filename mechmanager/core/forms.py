@@ -14,23 +14,40 @@ class VehicleForm(forms.ModelForm):
         model = Vehicle
         fields = ["owner", "plate", "make", "model", "year", "notes"]
 
-class WorkOrderForm(forms.ModelForm):
+class BootstrapFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            base = "form-control"
+            if isinstance(field.widget, forms.Select):
+                base = "form-select"
+            css = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{css} {base}".strip()
+
+class WorkOrderForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = WorkOrder
         fields = ["vehicle", "assigned_mechanic", "status", "notes"]
+        labels = {
+            "vehicle": "Veículo",
+            "assigned_mechanic": "Mecânico responsável",
+            "status": "Status",
+            "notes": "Notas",
+        }
+        # (Opcional) pode manter widgets específicos:
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),  # classe será adicionada pelo mixin
+        }
 
-class WorkItemForm(forms.ModelForm):
+class WorkItemForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = WorkItem
         fields = ["service", "quantity", "unit_price"]
-        widgets = {
-            "quantity": forms.NumberInput(attrs={"min": 1}),
-            "unit_price": forms.NumberInput(attrs={"step": "0.01", "min": 0}),
-        }
-WorkItemFormSet = inlineformset_factory(
+
+WorkItemFormSet = forms.inlineformset_factory(
     WorkOrder,
     WorkItem,
     form=WorkItemForm,
-    extra=2,
+    extra=1,
     can_delete=True,
 )

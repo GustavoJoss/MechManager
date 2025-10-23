@@ -1,3 +1,4 @@
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -36,9 +37,21 @@ def signup(request):
 # -------------------- ÁREA DO USUÁRIO --------------------
 
 @login_required
+@login_required
 def user_area(request):
-    vehicles = Vehicle.objects.filter(owner=request.user).order_by("-created_at")[:5]
-    orders = WorkOrder.objects.filter(vehicle__owner=request.user).order_by("-created_at")[:5]
+    vehicles = (
+        Vehicle.objects
+        .filter(owner=request.user)
+        .order_by("-created_at")[:5]
+    )
+
+    orders = (
+        WorkOrder.objects
+        .filter(vehicle__owner=request.user, customer_confirmed=False)  # <--
+        .select_related("vehicle", "vehicle__owner", "assigned_mechanic")
+        .order_by("-created_at")[:5]
+    )
+
     context = {
         "vehicles": vehicles,
         "orders": orders,
@@ -85,7 +98,7 @@ def workorder_create(request):
             wo = form.save(commit=False)
             wo.opened_by = request.user
             wo.save()
-            formset.instance = wo                        # agora liga os itens à OS criada
+            formset.instance = wo                        # liga os itens à OS criada
             formset.save()
             messages.success(request, "Ordem de serviço criada com sucesso.")
             return redirect("user_area")
@@ -110,3 +123,60 @@ def confirm_workorder(request, pk):
     else:
         messages.error(request, "Você não tem permissão para confirmar esta OS.")
     return redirect("user_area")
+
+
+@login_required
+def confirmar_os_json(request, pk):
+    wo = get_object_or_404(WorkOrder, pk=pk)
+    
+     # Dono do veículo (ou superuser) pode confirmar
+    if not (request.user.is_superuser or wo.vehicle.owner_id == request.user.id):
+        return HttpResponseForbidden("Sem permissão")
+
+    # Marca como confirmado pelo cliente
+    wo.customer_confirmed = True
+
+    # Opcional: mover status de 'open' para 'in_progress'
+    if wo.status == "open":
+        wo.status = "in_progress"
+
+    wo.save(update_fields=["customer_confirmed", "status"])
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+def workorder_detail(request, pk: int):
+    os_obj = get_object_or_404(WorkOrder, pk=pk)
+
+    if not request.user.is_superuser and os_obj.vehicle.owner_id != request.user.id:
+        return HttpResponseForbidden("Voce nao tem permissao para ver esta Ordem de Servico")
+    
+    itens = []
+
+    for it in getattr(os_obj, "items").all():
+        total_item = float(it.quantity) * float(it.unit_price)
+        itens.append({
+            "service": str(getattr(it, "service", "")),
+            "quantity": float(getattr(it, "quantity", 0)),
+            "unit_price": float(getattr(it, "unit_price", 0)),
+            "total": total_item,
+        })
+
+    created = getattr(os_obj, "created_at", None)
+
+    data = {
+        "id": os_obj.id,
+        "title": getattr(os_obj, "description", "") or "",
+        "customer": (os_obj.vehivle.owner.get_full_name() or os_obj.vehicle.owner.username),
+        "vehicle":{
+            "plate": os_obj.vehicle.plate,
+            "make": getattr(os_obj.vehicle, "make", ""),
+            "model": getattr(os_obj.vehicle, "model", ""),
+            "year": getattr(os_obj.vehicle, "year", ""),
+        },
+        "total": float(getattr(os_obj, "total", 0)),
+        "created_at": created.isoformat()if created else None,
+        "items": itens,
+    }
+    return JsonResponse(data, status=200)
