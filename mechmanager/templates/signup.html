@@ -1,8 +1,51 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="h4">Criar conta</h1>
-<form method="post" class="mt-3">{% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-success">Cadastrar</button>
-</form>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+  <div class="card shadow-lg border-0" style="max-width: 520px; width: 100%;">
+    <div class="card-body p-4">
+      <div class="text-center mb-3">
+        <h1 class="h4 fw-bold mb-1">Criar conta</h1>
+        <p class="text-muted mb-0">Leva menos de um minuto</p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="id_username" class="form-label">Usuário</label>
+          <input type="text" name="username" id="id_username" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="id_email" class="form-label">E-mail (opcional)</label>
+          <input type="email" name="email" id="id_email" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label for="id_password" class="form-label">Senha</label>
+          <input type="password" name="password" id="id_password" class="form-control" required>
+        </div>
+
+        {% if form and form.errors %}
+          <div class="alert alert-danger mt-3">Verifique os campos destacados.</div>
+        {% endif %}
+
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-custom btn-lg">Cadastrar</button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+      <div class="text-center">
+        <span class="text-muted me-2">Já tem conta?</span>
+        <a href="{% url 'login' %}" class="btn btn-outline-custom">Entrar</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
