@@ -13,7 +13,6 @@ ALLOWED_HOSTS = []
 
 # Apps instalados no projeto
 INSTALLED_APPS = [
-    'core',  # meu app principal
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'widget_tweaks',
+    'core.apps.CoreConfig',
 ]
 
 # Middlewares (controle de requisições)
@@ -78,3 +78,6 @@ STATIC_URL = 'static/'
 
 # Chave padrão dos IDs das tabelas
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

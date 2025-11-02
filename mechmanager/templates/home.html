@@ -1,20 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-  <div class="text-center">
-    <h1 class="fw-bold mb-3">MechManager</h1>
-    <p class="text-muted mb-4">Gerencie seus veículos e ordens de serviço de forma simples e profissional.</p>
 
-    <div class="card shadow-lg border-0 mx-auto" style="max-width: 400px;">
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+  <div class="text-center">
+    <h1 class="fw-bold mb-2 display-5 text-dark">MechManager</h1>
+    <p class="text-muted mb-4 fs-6">
+      Gerencie seus veículos e ordens de serviço de forma simples, moderna e profissional.
+    </p>
+
+    <div class="card shadow border-0 mx-auto" style="max-width: 380px;">
       <div class="card-body p-4">
-        <h5 class="card-title mb-3">Acesse sua conta</h5>
-        <p class="text-secondary small mb-4">Entre ou cadastre-se para começar a usar o sistema.</p>
+        <h5 class="card-title mb-3 fw-semibold">Bem-vindo!</h5>
+        <p class="text-secondary small mb-4">
+          Entre ou crie uma conta para começar a usar o sistema.
+        </p>
+
         <div class="d-grid gap-2">
-          <a href="{% url 'login' %}" class="btn btn-custom btn-lg">Entrar</a>
-          <a href="{% url 'signup' %}" class="btn btn-outline-custom btn-lg">Cadastrar</a>
+          <a href="{% url 'login' %}" class="btn btn-custom btn-lg">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+          </a>
+          <a href="{% url 'signup' %}" class="btn btn-outline-custom btn-lg">
+            <i class="bi bi-person-plus me-1"></i> Cadastrar
+          </a>
         </div>
       </div>
     </div>
+
+    <p class="text-muted small mt-4 mb-0">
+      &copy; {{ now|date:"Y" }} <span class="fw-semibold">MechManager</span> — Todos os direitos reservados.
+    </p>
   </div>
 </div>
+
 {% endblock %}

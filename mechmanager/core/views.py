@@ -11,13 +11,16 @@ from .forms import (
     VehicleForm,
     WorkOrderForm,
     WorkItemFormSet,
+    ProfileForm,
+    ProfileEditForm,
 )
 from .models import Vehicle, WorkOrder, WorkItem
 
 
-# -------------------- PÚBLICO --------------------
+# ---------- PÚBLICO ----------
 
 def home(request):
+    # página inicial
     return render(request, "home.html")
 
 
@@ -25,27 +28,27 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password"])
-            user.save()
+            user = form.save()
             login(request, user)
+            messages.success(request, "Conta criada com sucesso!")
             return redirect("user_area")
     else:
         form = SignUpForm()
     return render(request, "signup.html", {"form": form})
 
 
-# -------------------- ÁREA DO USUÁRIO --------------------
+# ---------- ÁREA DO USUÁRIO ----------
 
 @login_required
-@login_required
 def user_area(request):
+    # últimos veículos do usuário
     vehicles = (
         Vehicle.objects
         .filter(owner=request.user)
         .order_by("-created_at")[:5]
     )
 
+    # últimas OS abertas do usuário (não confirmadas)
     orders = (
         WorkOrder.objects
         .filter(vehicle__owner=request.user, customer_confirmed=False)
@@ -54,13 +57,14 @@ def user_area(request):
         .order_by("-created_at")[:5]
     )
 
+    # helper para exibir tempo de forma amigável
     def humanize(minutes: int) -> str:
         h, m = divmod(int(minutes or 0), 60)
         if h and m:  return f"{h}h {m}min"
         if h:       return f"{h}h"
         return f"{m}min"
 
-    # anota os valores prontos para o template
+    # coloca campos prontos pro template
     for wo in orders:
         mins = wo.total_estimated_minutes()
         wo.total_minutes = mins
@@ -77,21 +81,24 @@ def user_area(request):
 
 @require_POST
 def logout_view(request):
+    # sair da conta
     logout(request)
     messages.success(request, "Você saiu da sua conta.")
     return redirect("home")
 
 
-# -------------------- PERMISSÃO: SUPERUSER --------------------
+# ---------- PERMISSÃO: SUPERUSER ----------
 
 def superuser_required(view_func):
+    # atalho pra views só de admin
     return user_passes_test(lambda u: u.is_superuser)(view_func)
 
 
-# -------------------- CRUD NA UI (apenas superuser) --------------------
+# ---------- CRUD NA UI (apenas superuser) ----------
 
 @superuser_required
 def vehicle_create(request):
+    # cadastro de veículo
     if request.method == "POST":
         form = VehicleForm(request.POST)
         if form.is_valid():
@@ -100,39 +107,38 @@ def vehicle_create(request):
             return redirect("user_area")
     else:
         form = VehicleForm()
-    # sempre retorna algo (GET ou POST inválido)
     return render(request, "vehicle_form.html", {"form": form})
 
 
 @superuser_required
 def workorder_create(request):
+    # cria OS + itens no formset
     if request.method == "POST":
         form = WorkOrderForm(request.POST)
-        formset = WorkItemFormSet(request.POST)          # monta o formset sem instance
+        formset = WorkItemFormSet(request.POST)  # monta sem instance
         if form.is_valid() and formset.is_valid():
             wo = form.save(commit=False)
             wo.opened_by = request.user
             wo.save()
-            formset.instance = wo                        # liga os itens à OS criada
+            formset.instance = wo                 # liga os itens na OS
             formset.save()
             messages.success(request, "Ordem de serviço criada com sucesso.")
             return redirect("user_area")
     else:
         form = WorkOrderForm()
         formset = WorkItemFormSet()
-    # sempre retorna algo (GET ou POST inválido)
     return render(request, "workorder_form.html", {"form": form, "formset": formset})
 
 
-# -------------------- AÇÕES DO CLIENTE --------------------
+# ---------- AÇÕES DO CLIENTE ----------
 
 @login_required
 @require_POST
 def confirm_workorder(request, pk):
+    # cliente confirma a OS (ou admin)
     wo = get_object_or_404(WorkOrder, pk=pk)
-    # dono do veículo pode confirmar; superuser também
     if request.user.is_superuser or wo.vehicle.owner_id == request.user.id:
-        wo.customer_confirmed = True                     # nome do campo correto
+        wo.customer_confirmed = True
         wo.save(update_fields=["customer_confirmed"])
         messages.success(request, "Serviço confirmado com sucesso!")
     else:
@@ -142,19 +148,15 @@ def confirm_workorder(request, pk):
 
 @login_required
 def confirmar_os_json(request, pk):
+    # versão JSON da confirmação (AJAX)
     wo = get_object_or_404(WorkOrder, pk=pk)
-    
-     # Dono do veículo (ou superuser) pode confirmar
+
     if not (request.user.is_superuser or wo.vehicle.owner_id == request.user.id):
         return HttpResponseForbidden("Sem permissão")
 
-    # Marca como confirmado pelo cliente
     wo.customer_confirmed = True
-
-    # Opcional: mover status de 'open' para 'in_progress'
     if wo.status == "open":
         wo.status = "in_progress"
-
     wo.save(update_fields=["customer_confirmed", "status"])
 
     return JsonResponse({"ok": True})
@@ -162,16 +164,17 @@ def confirmar_os_json(request, pk):
 
 @login_required
 def workorder_detail(request, pk: int):
+    # detalhes da OS (valida dono ou admin)
     os_obj = get_object_or_404(
         WorkOrder.objects.select_related("vehicle", "vehicle__owner")
                          .prefetch_related("items__service"),
         pk=pk
     )
 
-    # Permissão: dono do veículo ou superuser
     if not request.user.is_superuser and os_obj.vehicle.owner_id != request.user.id:
         return HttpResponseForbidden("Você não tem permissão para ver esta Ordem de Serviço")
 
+    # monta o payload dos itens
     itens = []
     for it in os_obj.items.all():
         itens.append({
@@ -187,8 +190,8 @@ def workorder_detail(request, pk: int):
 
     data = {
         "id": os_obj.id,
-        "title": os_obj.title or "",                 # era description, corrigido para title
-        "notes": os_obj.notes or "",                 # para mostrar nas observações
+        "title": os_obj.title or "",
+        "notes": os_obj.notes or "",
         "customer": (os_obj.vehicle.owner.get_full_name() or os_obj.vehicle.owner.username),
         "vehicle": {
             "plate": os_obj.vehicle.plate,
@@ -203,3 +206,44 @@ def workorder_detail(request, pk: int):
         "items": itens,
     }
     return JsonResponse(data, status=200)
+
+
+@login_required
+def profile(request):
+    # perfil do usuário + upload da foto
+    profile = request.user.profile
+    vehicles = Vehicle.objects.filter(owner=request.user).order_by("-created_at")
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Foto atualizada com sucesso!")
+            return redirect("profile")
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, "profile.html", {
+        "user": request.user,
+        "vehicles": vehicles,
+        "form": form,
+    })
+
+@login_required
+def profile_edit(request):
+    profile = request.user.profile  # já existe pelo signal
+    if request.method == "POST":
+        form = ProfileEditForm(
+            request.POST,
+            request.FILES,
+            instance=profile,
+            user=request.user,
+        )
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Dados atualizados com sucesso!")
+            return redirect("profile")
+    else:
+        form = ProfileEditForm(instance=profile, user=request.user)
+
+    return render(request, "profile_edit.html", {"form": form})

@@ -27,9 +27,15 @@
         </div>
 
         <div class="mb-3">
+          <label for="id_phone" class="form-label">Telefone</label>
+          <input type="text" name="phone" id="id_phone" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
           <label for="id_password" class="form-label">Senha</label>
           <input type="password" name="password" id="id_password" class="form-control" required>
         </div>
+
 
         {% if form and form.errors %}
           <div class="alert alert-danger mt-3">Verifique os campos destacados.</div>

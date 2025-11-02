@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="profile-wrapper">
+  <div class="card shadow-sm profile-card">
+    <div class="card-body p-4 p-md-5">
+      <div class="row g-4 align-items-center">
+        
+        <!-- Avatar + Upload -->
+        <div class="col-auto">
+          <div class="avatar-stack">
+            {% if user.profile.photo %}
+              <img id="avatarPreview"
+                   src="{{ user.profile.photo.url }}"
+                   class="profile-avatar shadow-sm"
+                   alt="Foto do perfil">
+            {% else %}
+              <div id="avatarFallback"
+                   class="profile-avatar bg-primary text-white d-flex align-items-center justify-content-center shadow-sm">
+                <span class="fw-bold" style="font-size:1.6rem;">
+                  {{ user.username|first|upper }}
+                </span>
+              </div>
+            {% endif %}
+
+            <!-- Botão da câmera -->
+            <label for="id_photo" class="profile-edit-btn" title="Trocar foto">
+              <i class="bi bi-camera-fill"></i>
+            </label>
+          </div>
+
+          <!-- Form de upload -->
+          <form method="post" enctype="multipart/form-data" id="photoForm" class="mt-3">
+            {% csrf_token %}
+            {{ form.photo }}  {# input escondido com id="id_photo" #}
+            <button class="btn btn-primary btn-sm mt-2 d-none" id="savePhotoBtn" type="submit">
+              Salvar foto
+            </button>
+          </form>
+        </div>
+
+        <!-- Dados principais -->
+        <div class="col">
+          <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+            <div>
+              <h1 class="h4 mb-1">{{ user.get_full_name|default:user.username }}</h1>
+              <div class="text-muted small">
+                <i class="bi bi-envelope-at me-1"></i>
+                {{ user.email|default:"(sem e-mail)" }}
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <a href="{% url 'user_area' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-grid me-1"></i> Minha área
+              </a>
+              <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="bi bi-person-gear me-1"></i> Editar dados
+              </button>
+
+              <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="editProfileLabel">Editar Perfil</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nome</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Sobrenome</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">E-mail</label>
+                                <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Telefone</label>
+                                <input type="text" name="phone" class="form-control" value="{{ user.profile.phone }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Foto</label>
+                                <input type="file" name="photo" class="form-control">
+                            </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-4">
+            <div class="col-sm-6 col-lg-4">
+              <div class="stat-tile">
+                <div class="text-muted small">Cadastrado em</div>
+                <div class="fw-semibold">{{ user.date_joined|date:"d/m/Y H:i" }}</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <div class="stat-tile">
+                <div class="text-muted small">Último login</div>
+                <div class="fw-semibold">{{ user.last_login|date:"d/m/Y H:i" }}</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <div class="stat-tile">
+                <div class="text-muted small">Veículos cadastrados</div>
+                <div class="fw-semibold">{{ user.vehicles.count }}</div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <div class="stat-tile">
+                <div class="text-muted small">Telefone para contato</div>
+                <div class="fw-semibold">{{ user.profile.phone_formatted }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Meus veículos -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h5 mb-0">Meus veículos</h2>
+        {% if user.is_superuser %}
+          <a href="{% url 'vehicle_create' %}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Novo veículo
+          </a>
+        {% endif %}
+      </div>
+
+      {% if user.vehicles.all|length %}
+        <ul class="list-group list-group-flush rounded overflow-hidden profile-vehicle-list">
+          {% for v in user.vehicles.all %}
+            <li class="list-group-item d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+              <div class="mb-2 mb-md-0">
+                <span class="badge bg-dark-subtle text-dark me-2">{{ v.plate }}</span>
+                <strong>{{ v.make }} {{ v.model }}</strong>
+                <span class="text-muted">({{ v.year }})</span>
+              </div>
+              {% if v.notes %}
+                <div class="text-muted small text-truncate" style="max-width:420px;">{{ v.notes }}</div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-muted">Você ainda não cadastrou veículos.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Script de preview da foto -->
+<script>
+  (function () {
+    const fileInput = document.getElementById('id_photo');
+    const saveBtn   = document.getElementById('savePhotoBtn');
+    const avatarImg = document.getElementById('avatarPreview');
+    const fallback  = document.getElementById('avatarFallback');
+
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      saveBtn?.classList.remove('d-none');
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (avatarImg) {
+          avatarImg.src = ev.target.result;
+        } else if (fallback) {
+          const img = document.createElement('img');
+          img.id = 'avatarPreview';
+          img.src = ev.target.result;
+          img.className = 'profile-avatar shadow-sm';
+          fallback.replaceWith(img);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  })();
+</script>
+
+{% endblock %}
