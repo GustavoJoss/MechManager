@@ -1,0 +1,35 @@
+:root {
+  --primary: #0d6efd; /* Azul padrão bootstrap */
+  --dark-blue: #004b6b;
+  --accent: #ffc107; /* Amarelo pra detalhes */
+}
+
+body {
+  background: linear-gradient(135deg, #f8f9fa, #dee2e6);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-custom {
+  background-color: var(--dark-blue);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-custom:hover {
+  background-color: #fff;
+  color: var(--dark-blue);
+}
+
+.btn-outline-custom {
+  border: none;
+  color: var(--dark-blue);
+  font-weight: 600;
+}
+
+.btn-outline-custom:hover {
+  background-color: var(--dark-blue);
+  color: #fff;
+} 
