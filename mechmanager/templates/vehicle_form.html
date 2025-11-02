@@ -1,11 +1,66 @@
 {% extends "base.html" %}
 {% block content %}
 <h1 class="h4 mb-3">Cadastrar veículo</h1>
-<form method="post" class="card card-body">{% csrf_token %}
-  {{ form.as_p }}
-  <div class="mt-2">
-    <button class="btn btn-success">Salvar</button>
-    <a class="btn btn-light" href="{% url 'user_area' %}">Cancelar</a>
+
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex align-items-baseline justify-content-between mb-2">
+        <h3 class="card-title mb-0 section-title">Novo veículo</h3>
+        <span class="section-sub">Preencha os dados do veículo</span>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.owner.id_for_label }}">{{ form.fields.owner.label }}</label>
+            {{ form.owner }}
+            <div class="text-danger small">{{ form.owner.errors }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.plate.id_for_label }}">{{ form.fields.plate.label }}</label>
+            {{ form.plate }}
+            <div class="text-danger small">{{ form.plate.errors }}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.make.id_for_label }}">{{ form.fields.make.label }}</label>
+            {{ form.make }}
+            <div class="text-danger small">{{ form.make.errors }}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.model.id_for_label }}">{{ form.fields.model.label }}</label>
+            {{ form.model }}
+            <div class="text-danger small">{{ form.model.errors }}</div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.year.id_for_label }}">{{ form.fields.year.label }}</label>
+            {{ form.year }}
+            <div class="text-danger small">{{ form.year.errors }}</div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.fields.notes.label }}</label>
+            {{ form.notes }}
+            <div class="text-danger small">{{ form.notes.errors }}</div>
+          </div>
+        </div>
+
+        <div class="form-actions mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-custom">Salvar</button>
+          <a href="{% url 'user_area' %}" class="btn btn-light">Cancelar</a>
+        </div>
+      </form>
+    </div>
   </div>
-</form>
+</div>
 {% endblock %}

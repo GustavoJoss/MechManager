@@ -9,10 +9,7 @@ class SignUpForm(forms.ModelForm):
         model = User
         fields = ["username", "email", "password"]
 
-class VehicleForm(forms.ModelForm):
-    class Meta:
-        model = Vehicle
-        fields = ["owner", "plate", "make", "model", "year", "notes"]
+
 
 class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
@@ -24,6 +21,23 @@ class BootstrapFormMixin:
             css = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{css} {base}".strip()
 
+class VehicleForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Vehicle
+        fields = ["owner", "plate", "make", "model", "year", "notes"]
+        labels = {
+            "owner": "Proprietário",
+            "plate": "Placa",
+            "make": "Marca",
+            "model": "Modelo",
+            "year": "Ano",
+            "notes": "Notas",
+        }
+        widgets = {
+            "year": forms.NumberInput(attrs={"min": 1900, "max": 2100}),
+        }
+
+
 class WorkOrderForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = WorkOrder
@@ -34,9 +48,8 @@ class WorkOrderForm(BootstrapFormMixin, forms.ModelForm):
             "status": "Status",
             "notes": "Notas",
         }
-        # (Opcional) pode manter widgets específicos:
         widgets = {
-            "notes": forms.Textarea(attrs={"rows": 4}),  # classe será adicionada pelo mixin
+            "notes": forms.Textarea(attrs={"rows": 4}),
         }
 
 class WorkItemForm(BootstrapFormMixin, forms.ModelForm):

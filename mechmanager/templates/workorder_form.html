@@ -5,11 +5,13 @@
 <div class="container mt-4">
   <div class="card shadow-sm">
     <div class="card-body">
-      <h3 class="card-title mb-4">Nova Ordem de Serviço</h3>
+      <div class="d-flex align-items-baseline justify-content-between mb-2">
+        <h3 class="card-title mb-0 section-title">Nova Ordem de Serviço</h3>
+        <span class="section-sub">Preencha dados e adicione os serviços</span>
+      </div>
 
       <form method="post" novalidate>
         {% csrf_token %}
-
         {% if form.non_field_errors %}
           <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
@@ -45,44 +47,111 @@
         <hr>
 
         <!-- ITENS -->
-        <h5 class="mb-3">Itens</h5>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="mb-0">Itens</h5>
+          <button type="button" id="add-item" class="btn btn-custom">
+            <i class="bi bi-plus-lg me-1"></i> Adicionar item
+          </button>
+        </div>
 
         {{ formset.management_form }}
 
-        {% for f in formset.forms %}
-          {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
-          <div class="row align-items-end mb-3 border rounded p-3 bg-light">
-            <div class="col-md-5">
-              <label class="form-label" for="{{ f.service.id_for_label }}">{{ f.fields.service.label }}</label>
-              {{ f.service }}
-              <div class="text-danger small">{{ f.service.errors }}</div>
-            </div>
+        <div id="items-container" class="items-box">
+          {% for f in formset.forms %}
+            {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="row align-items-end item-row">
+              <div class="col-md-5">
+                <label class="form-label" for="{{ f.service.id_for_label }}">{{ f.fields.service.label }}</label>
+                {{ f.service }}
+                <div class="text-danger small">{{ f.service.errors }}</div>
+              </div>
 
-            <div class="col-md-2">
-              <label class="form-label" for="{{ f.quantity.id_for_label }}">{{ f.fields.quantity.label }}</label>
-              {{ f.quantity }}
-              <div class="text-danger small">{{ f.quantity.errors }}</div>
-            </div>
+              <div class="col-md-2">
+                <label class="form-label" for="{{ f.quantity.id_for_label }}">{{ f.fields.quantity.label }}</label>
+                {{ f.quantity }}
+                <div class="text-danger small">{{ f.quantity.errors }}</div>
+              </div>
 
-            <div class="col-md-3">
-              <label class="form-label" for="{{ f.unit_price.id_for_label }}">{{ f.fields.unit_price.label }}</label>
-              {{ f.unit_price }}
-              <div class="text-danger small">{{ f.unit_price.errors }}</div>
-            </div>
+              <div class="col-md-3">
+                <label class="form-label" for="{{ f.unit_price.id_for_label }}">{{ f.fields.unit_price.label }}</label>
+                {{ f.unit_price }}
+                <div class="text-danger small">{{ f.unit_price.errors }}</div>
+              </div>
 
-            <div class="col-md-2 text-center">
-              <label class="form-label d-block" for="{{ f.DELETE.id_for_label }}">Excluir</label>
-              {{ f.DELETE }}
+              <div class="col-md-2 d-flex align-items-end justify-content-end">
+                {% if f.DELETE %}<div class="d-none">{{ f.DELETE }}</div>{% endif %}
+                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">
+                  <i class="bi bi-trash me-1"></i> Remover
+                </button>
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
 
-        <div class="mt-4 d-flex gap-2">
-          <button type="submit" class="btn btn-primary">Salvar</button>
-          <a href="{% url 'user_area' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <div class="form-actions mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-custom">Salvar</button>
+          <a href="{% url 'user_area' %}" class="btn btn-light">Cancelar</a>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<!-- Template invisível para novos itens -->
+<div id="empty-form-template" class="d-none">
+  <div class="row align-items-end item-row enter">
+    <div class="col-md-5">
+      <label class="form-label" for="{{ formset.empty_form.service.id_for_label }}">{{ formset.empty_form.fields.service.label }}</label>
+      {{ formset.empty_form.service }}
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="{{ formset.empty_form.quantity.id_for_label }}">{{ formset.empty_form.fields.quantity.label }}</label>
+      {{ formset.empty_form.quantity }}
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="{{ formset.empty_form.unit_price.id_for_label }}">{{ formset.empty_form.fields.unit_price.label }}</label>
+      {{ formset.empty_form.unit_price }}
+    </div>
+    <div class="col-md-2 d-flex align-items-end justify-content-end">
+      {% if formset.can_delete %}<div class="d-none">{{ formset.empty_form.DELETE }}</div>{% endif %}
+      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item">
+        <i class="bi bi-trash me-1"></i> Remover
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const container = document.getElementById('items-container');
+    const addBtn = document.getElementById('add-item');
+    const templateHTML = document.getElementById('empty-form-template').innerHTML;
+    const totalForms = document.querySelector('input[name="{{ formset.prefix }}-TOTAL_FORMS"]');
+
+    function addItem() {
+      const i = parseInt(totalForms.value, 10);
+      const html = templateHTML.replace(/__prefix__/g, i);
+      const frag = document.createElement('div');
+      frag.innerHTML = html.trim();
+      const row = frag.firstElementChild;
+      container.appendChild(row);
+      requestAnimationFrame(() => {
+        row.classList.add('enter-active');
+      });
+      totalForms.value = i + 1;
+    }
+
+    function removeItem(btn) {
+      const row = btn.closest('.item-row');
+      const del = row.querySelector('input[type="checkbox"][name*="-DELETE"]');
+      if (del) { del.checked = true; row.style.display = 'none'; }
+      else { row.remove(); }
+    }
+
+    addBtn.addEventListener('click', addItem);
+    container.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-remove-item')) removeItem(e.target);
+    });
+  })();
+</script>
 {% endblock %}
