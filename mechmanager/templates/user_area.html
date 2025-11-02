@@ -14,7 +14,7 @@
 </ul>
 
 <h3 class="h6">Minhas últimas OS</h3>
-<table class="table table-striped">
+<table class="table table-striped align-middle">
   <thead>
     <tr>
       <th>#</th>
@@ -22,50 +22,42 @@
       <th>Placa</th>
       <th>Serviço</th>
       <th>Total</th>
+      <th>Tempo estimado</th>
       <th>Ações</th>
     </tr>
   </thead>
-  <tbody id="tbody-os">
+  <tbody>
   {% for os in orders %}
     <tr id="os-{{ os.id }}">
       <td>{{ os.id }}</td>
-
-      <!-- Cliente -->
-      <td>
-        {% if os.vehicle.owner.get_full_name %}
-          {{ os.vehicle.owner.get_full_name }}
-        {% else %}
-          {{ os.vehicle.owner.username }}
-        {% endif %}
-      </td>
-
-      <!-- Placa -->
+      <td>{{ os.vehicle.owner.username }}</td>
       <td>{{ os.vehicle.plate }}</td>
-
-      <!-- Serviço (título gerado automaticamente com base nos itens da OS) -->
       <td>{{ os.title|default:"—" }}</td>
-
-      <!-- Total (somatório dos itens) -->
-      <td>R$ {{ os.total|floatformat:2 }}</td>
-
+      <td>R$ {{ os.total }}</td>
       <td>
-        {% if os.customer_confirmed %}
-          <button class="btn btn-secondary" disabled>Confirmado</button>
-        {% else %}
-          <button class="btn btn-success btn-confirmar" data-id="{{ os.id }}">
+        {{ os.total_minutes }} min
+        <span class="text-muted">(~{{ os.total_hours }} h / {{ os.total_human }})</span>
+      </td>
+      <td class="d-flex gap-2">
+        {% if not os.customer_confirmed %}
+          <button type="button" class="btn btn-success btn-sm btn-confirmar" data-id="{{ os.id }}">
             Confirmar
           </button>
+        {% else %}
+          <span class="badge bg-success">Confirmada</span>
         {% endif %}
-      </td>
-      <td>
-        <button class="btn btn-light btn-detalhes" data-id="{{ os.id }}">Detalhes</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm btn-detalhes" data-id="{{ os.id }}">
+          Detalhes
+        </button>
       </td>
     </tr>
   {% empty %}
-    <tr><td colspan="6" class="text-muted">Nenhuma OS pendente.</td></tr>
+    <tr><td colspan="7" class="text-center text-muted">Nenhuma ordem de serviço encontrada.</td></tr>
   {% endfor %}
   </tbody>
 </table>
+
+<!-- Modal Detalhes -->
 <div class="modal fade" id="osDetailModal" tabindex="-1" aria-labelledby="osDetailLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -74,15 +66,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
+        <div class="mb-2"><strong>Cliente:</strong> <span id="os-customer"></span></div>
+        <div class="mb-2"><strong>Veículo:</strong> <span id="os-vehicle"></span></div>
         <div class="mb-2">
-          <strong>Cliente:</strong> <span id="os-customer"></span>
-        </div>
-        <div class="mb-2">
-          <strong>Veículo:</strong> <span id="os-vehicle"></span>
-        </div>
-        <div class="mb-3">
-          <strong>Descrição:</strong>
-          <p id="os-description" class="mb-0 text-pre-wrap"></p>
+          <strong>Observações:</strong>
+          <p id="os-notes" class="mb-0 text-pre-wrap text-muted">—</p>
         </div>
         <div class="mb-2">
           <strong>Itens:</strong>
@@ -101,7 +89,8 @@
           </div>
         </div>
         <div class="text-end">
-          <strong>Total:</strong> <span id="os-total"></span>
+          <div><strong>Tempo estimado:</strong> <span id="os-time"></span></div>
+          <div><strong>Total:</strong> <span id="os-total"></span></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -112,17 +101,14 @@
 </div>
 
 <style>
-/* quebra de linha para descrições longas */
 .text-pre-wrap { white-space: pre-wrap; }
 </style>
 
 <script>
-
 (() => {
-  // Utilitário simples para BRL
-  const brl = (n) => isFinite(n) ? n.toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : '—';
+  const brl = (n) => isFinite(n) ? n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '—';
 
-  // Abrir modal com detalhes
+  // Abrir modal Detalhes
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.btn-detalhes');
     if (!btn) return;
@@ -133,13 +119,13 @@
       if (!resp.ok) throw new Error('Falha ao carregar detalhes.');
       const data = await resp.json();
 
-      // Preenche campos do modal
+      // Campos básicos
       document.getElementById('os-id').textContent = data.id ?? '';
       document.getElementById('os-customer').textContent = data.customer ?? '';
       document.getElementById('os-vehicle').textContent = data.vehicle
         ? `${data.vehicle.plate} — ${data.vehicle.make || ''} ${data.vehicle.model || ''} (${data.vehicle.year || ''})`
         : '';
-      document.getElementById('os-description').textContent = data.description || '—';
+      document.getElementById('os-notes').textContent = (data.notes && data.notes.trim()) ? data.notes : 'Sem observações.';
 
       // Itens
       const tbody = document.getElementById('os-items');
@@ -148,18 +134,21 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${it.service || ''}</td>
-          <td class="text-end">${(it.quantity ?? 0)}</td>
+          <td class="text-end">${it.quantity ?? 0}</td>
           <td class="text-end">${brl(it.unit_price ?? 0)}</td>
           <td class="text-end">${brl(it.total ?? 0)}</td>
         `;
         tbody.appendChild(tr);
       });
 
+      // Totais
+      const mins = data.estimated_total_minutes ?? 0;
+      const hours = data.estimated_total_hours ?? (mins/60).toFixed(1);
+      document.getElementById('os-time').textContent = `${mins} min (~${hours} h)`;
       document.getElementById('os-total').textContent = brl(data.total ?? 0);
 
-      // Abre o modal (Bootstrap 5)
-      const modalEl = document.getElementById('osDetailModal');
-      const modal = new bootstrap.Modal(modalEl);
+      // Abre modal
+      const modal = new bootstrap.Modal(document.getElementById('osDetailModal'));
       modal.show();
 
     } catch (err) {
@@ -167,25 +156,25 @@
       alert('Não foi possível carregar os detalhes da OS.');
     }
   });
-})();
-(() => {
+
+  // Confirmar OS (POST JSON)
   function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
   }
-  const csrfTokenValue = getCookie('csrftoken');
+  const csrf = getCookie('csrftoken');
 
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.btn-confirmar');
     if (!btn) return;
 
     const id = btn.getAttribute('data-id');
-    if (!window.confirm('Tem certeza que deseja confirmar esta Ordem de Serviço?')) return;
+    if (!window.confirm('Confirmar esta Ordem de Serviço?')) return;
 
     const resp = await fetch(`/os/${id}/confirmar/`, {
       method: 'POST',
-      headers: { 'X-CSRFToken': csrfTokenValue },
+      headers: { 'X-CSRFToken': csrf },
     });
 
     if (resp.ok) {
@@ -197,5 +186,4 @@
   });
 })();
 </script>
-
 {% endblock %}

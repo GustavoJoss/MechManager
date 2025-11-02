@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
+from django.db.models import Prefetch
 
 from .forms import (
     SignUpForm,
@@ -11,7 +12,7 @@ from .forms import (
     WorkOrderForm,
     WorkItemFormSet,
 )
-from .models import Vehicle, WorkOrder
+from .models import Vehicle, WorkOrder, WorkItem
 
 
 # -------------------- PÚBLICO --------------------
@@ -47,10 +48,24 @@ def user_area(request):
 
     orders = (
         WorkOrder.objects
-        .filter(vehicle__owner=request.user, customer_confirmed=False)  # <--
+        .filter(vehicle__owner=request.user, customer_confirmed=False)
         .select_related("vehicle", "vehicle__owner", "assigned_mechanic")
+        .prefetch_related(Prefetch("items", queryset=WorkItem.objects.select_related("service")))
         .order_by("-created_at")[:5]
     )
+
+    def humanize(minutes: int) -> str:
+        h, m = divmod(int(minutes or 0), 60)
+        if h and m:  return f"{h}h {m}min"
+        if h:       return f"{h}h"
+        return f"{m}min"
+
+    # anota os valores prontos para o template
+    for wo in orders:
+        mins = wo.total_estimated_minutes()
+        wo.total_minutes = mins
+        wo.total_hours = round(mins / 60, 1)
+        wo.total_human = humanize(mins)
 
     context = {
         "vehicles": vehicles,
@@ -147,36 +162,44 @@ def confirmar_os_json(request, pk):
 
 @login_required
 def workorder_detail(request, pk: int):
-    os_obj = get_object_or_404(WorkOrder, pk=pk)
+    os_obj = get_object_or_404(
+        WorkOrder.objects.select_related("vehicle", "vehicle__owner")
+                         .prefetch_related("items__service"),
+        pk=pk
+    )
 
+    # Permissão: dono do veículo ou superuser
     if not request.user.is_superuser and os_obj.vehicle.owner_id != request.user.id:
-        return HttpResponseForbidden("Voce nao tem permissao para ver esta Ordem de Servico")
-    
-    itens = []
+        return HttpResponseForbidden("Você não tem permissão para ver esta Ordem de Serviço")
 
-    for it in getattr(os_obj, "items").all():
-        total_item = float(it.quantity) * float(it.unit_price)
+    itens = []
+    for it in os_obj.items.all():
         itens.append({
-            "service": str(getattr(it, "service", "")),
-            "quantity": float(getattr(it, "quantity", 0)),
-            "unit_price": float(getattr(it, "unit_price", 0)),
-            "total": total_item,
+            "service": str(it.service),
+            "quantity": int(it.quantity or 0),
+            "unit_price": float(it.unit_price or 0),
+            "total": float(it.subtotal),
+            "estimated_minutes": it.line_estimated_minutes(),
         })
 
     created = getattr(os_obj, "created_at", None)
+    total_minutes = os_obj.total_estimated_minutes()
 
     data = {
         "id": os_obj.id,
-        "title": getattr(os_obj, "description", "") or "",
-        "customer": (os_obj.vehivle.owner.get_full_name() or os_obj.vehicle.owner.username),
-        "vehicle":{
+        "title": os_obj.title or "",                 # era description, corrigido para title
+        "notes": os_obj.notes or "",                 # para mostrar nas observações
+        "customer": (os_obj.vehicle.owner.get_full_name() or os_obj.vehicle.owner.username),
+        "vehicle": {
             "plate": os_obj.vehicle.plate,
             "make": getattr(os_obj.vehicle, "make", ""),
             "model": getattr(os_obj.vehicle, "model", ""),
             "year": getattr(os_obj.vehicle, "year", ""),
         },
-        "total": float(getattr(os_obj, "total", 0)),
-        "created_at": created.isoformat()if created else None,
+        "total": float(os_obj.total),
+        "estimated_total_minutes": total_minutes,
+        "estimated_total_hours": round(total_minutes / 60, 1),
+        "created_at": created.isoformat() if created else None,
         "items": itens,
     }
     return JsonResponse(data, status=200)
