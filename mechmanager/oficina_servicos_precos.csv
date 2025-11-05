@@ -1,0 +1,87 @@
+category,service_name,price_min_brl,price_max_brl,estimated_hours
+Serviços Gerais,Troca de óleo e filtro,60,120,0.5
+Serviços Gerais,Revisão preventiva,180,350,1.5
+Serviços Gerais,Diagnóstico eletrônico (scanner),80,160,0.5
+Serviços Gerais,Revisão geral de 10.000 km,220,450,2.0
+Serviços Gerais,Revisão geral de 20.000 km,280,550,2.5
+Serviços Gerais,Alinhamento e balanceamento,120,220,1.0
+Serviços Gerais,Rodízio de pneus,40,90,0.3
+Serviços Gerais,Higienização do ar-condicionado,120,220,1.0
+Serviços Gerais,Troca de palhetas do limpador,20,50,0.1
+Serviços Gerais,Troca de filtro de ar do motor,30,70,0.2
+Motor,Regulagem de válvulas,250,500,2.5
+Motor,Troca de correia dentada,350,800,3.5
+Motor,Troca de bomba d’água,300,650,3.0
+Motor,Troca de juntas do cabeçote,1200,2500,12.0
+Motor,Retífica de motor (mão de obra de remoção/instalação),1500,3500,16.0
+Motor,Troca de coxim do motor,150,320,1.5
+Motor,Troca de vela de ignição,60,140,0.6
+Motor,Troca de bobina de ignição,70,160,0.5
+Motor,Troca de bico injetor (unidade),80,160,0.6
+Motor,Limpeza de bicos injetores (jogo),150,300,1.5
+Suspensão e Direção,Troca de amortecedores (par),220,450,2.5
+Suspensão e Direção,Troca de molas helicoidais (par),200,420,2.0
+Suspensão e Direção,Troca de pivô de suspensão (par),160,320,1.5
+Suspensão e Direção,Troca de bandejas (par),240,520,2.0
+Suspensão e Direção,Troca de buchas de bandeja (par),180,360,2.0
+Suspensão e Direção,Troca de barra estabilizadora (buchas/links),150,320,1.5
+Suspensão e Direção,Troca de terminal de direção (par),160,320,1.5
+Suspensão e Direção,Troca de caixa de direção hidráulica,500,1000,4.0
+Suspensão e Direção,Troca de fluido de direção,60,120,0.5
+Suspensão e Direção,Troca de coifas de direção (par),160,320,1.5
+Freios,Troca de pastilhas de freio (eixo),100,220,1.0
+Freios,Troca de discos de freio (eixo),200,420,2.0
+Freios,Troca de lonas de freio (eixo),180,360,2.0
+Freios,Troca de tambor de freio (eixo),200,420,2.0
+Freios,Troca de fluido de freio,80,160,0.8
+Freios,Revisão do sistema ABS,200,450,1.5
+Freios,Regulagem do freio de mão,80,160,0.7
+Freios,Troca de cilindro mestre,220,450,2.0
+Freios,Troca de servo-freio,280,600,2.5
+Freios,Troca de mangueiras de freio (jogo),200,420,2.0
+Elétrica e Eletrônica,Troca de bateria,40,100,0.2
+Elétrica e Eletrônica,"Troca de lâmpadas (farol, seta, freio, painel)",20,80,0.2
+Elétrica e Eletrônica,Troca de alternador,250,520,2.5
+Elétrica e Eletrônica,Troca de motor de partida,220,480,2.0
+Elétrica e Eletrônica,Instalação de som automotivo básico,250,600,3.0
+Elétrica e Eletrônica,Instalação de alarme,280,650,3.0
+Elétrica e Eletrônica,Instalação de trava elétrica,280,700,3.5
+Elétrica e Eletrônica,Instalação de sensor de ré,180,380,2.0
+Elétrica e Eletrônica,Revisão do sistema de carga,120,260,1.0
+Elétrica e Eletrônica,Teste de sistema elétrico geral,100,220,1.0
+Ar-Condicionado,Reposição de gás do ar-condicionado,180,380,1.2
+Ar-Condicionado,Troca do filtro do ar-condicionado (cabin filter),40,90,0.2
+Ar-Condicionado,Limpeza do evaporador,200,450,2.0
+Ar-Condicionado,Troca do compressor,400,900,3.0
+Ar-Condicionado,Troca do condensador,350,800,3.0
+Ar-Condicionado,Revisão completa do sistema de ar-condicionado,450,900,4.0
+Transmissão e Embreagem,Troca de embreagem completa,600,1300,6.0
+Transmissão e Embreagem,Troca de cabo de embreagem,120,260,1.0
+Transmissão e Embreagem,Troca de fluido de câmbio (manual),80,160,0.8
+Transmissão e Embreagem,Troca de fluido de câmbio (automático),200,480,1.5
+Transmissão e Embreagem,Revisão do câmbio manual,350,900,4.0
+Transmissão e Embreagem,Revisão do câmbio automático,450,1200,5.0
+Transmissão e Embreagem,Troca de homocinética (lado),220,480,2.0
+Transmissão e Embreagem,Troca de coifa da homocinética (lado),120,260,1.0
+Transmissão e Embreagem,Troca de suporte do câmbio,160,320,1.5
+Escapamento e Emissões,Troca de escapamento (seção),180,420,1.5
+Escapamento e Emissões,Troca de catalisador,300,700,2.5
+Escapamento e Emissões,Troca de sonda lambda,120,260,0.8
+Escapamento e Emissões,Troca de abafador intermediário,160,360,1.2
+Escapamento e Emissões,Troca de abafador traseiro,160,360,1.2
+Escapamento e Emissões,Revisão do sistema de exaustão,180,380,1.5
+Estética e Complementares,Polimento automotivo (simples),250,500,4.0
+Estética e Complementares,Higienização interna completa,220,480,3.0
+Estética e Complementares,Cristalização da pintura,350,750,6.0
+Estética e Complementares,Vitrificação da pintura,800,1800,10.0
+Estética e Complementares,Limpeza técnica de motor,120,260,1.0
+Estética e Complementares,Lavagem completa,40,100,0.5
+Estética e Complementares,Limpeza de bancos de couro,180,360,2.0
+Estética e Complementares,Remoção de odores (oxidação/ozônio),150,320,1.5
+Estética e Complementares,Revitalização de faróis (par),120,260,1.5
+Estética e Complementares,Aplicação de proteção cerâmica,900,2200,12.0
+Serviços Administrativos,Diagnóstico inicial (avaliação),0,80,0.3
+Serviços Administrativos,Elaboração de orçamento técnico,0,60,0.3
+Serviços Administrativos,Revisão pós-serviço,0,50,0.2
+Serviços Administrativos,Garantia e verificação de serviço,0,0,0.2
+Serviços Administrativos,Entrega técnica ao cliente,0,40,0.3
